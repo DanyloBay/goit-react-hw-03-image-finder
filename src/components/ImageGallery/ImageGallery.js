@@ -1,30 +1,52 @@
 import { Component } from 'react';
 import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
-import axios from 'axios';
+
 import './ImageGallery.scss';
 import { Loader } from 'components/Loader/Loader';
 import { Button } from 'components/Button/Button';
 import PropTypes from 'prop-types';
-
-const _BASE_URL = 'https://pixabay.com/api/';
-const _API_KEY = '34198243-210bab7eda00f7845d389eb7b';
+import fetchPhotos from 'components/API/Api';
 
 export class ImageGallery extends Component {
   state = {
     data: null,
     status: 'idle',
     page: 1,
+    error: null,
   };
 
-  async componentDidUpdate(prevProps, _) {
-    if (prevProps.searchQuery !== this.props.searchQuery) {
-      this.setState({ status: 'pending' });
-      const { data } = await axios(
-        `${_BASE_URL}?key=${_API_KEY}&q=${this.props.searchQuery}&image_type=photo&orientation=horizontal&safesearch=true&page=${this.state.page}&per_page=12`
-      );
-      this.setState({ data, status: 'resolved' });
+  async componentDidUpdate(prevProps, prevState) {
+    const { searchQuery } = this.props;
+    const { page } = this.state;
+    try {
+      if (prevProps.searchQuery !== searchQuery) {
+        this.setState({ status: 'pending' });
+        const data = await fetchPhotos(searchQuery);
+        this.setState({ data, status: 'resolved' });
+      }
+    } catch (error) {
+      this.setState({ error, status: 'rejected' });
+      console.log(error.message);
+    }
+
+    if (prevState.page !== page) {
+      try {
+        this.setState({ status: 'pending' });
+        const response = await fetchPhotos(searchQuery, page);
+        this.setState(prevState => ({
+          data: [...prevState.data, ...response],
+          status: 'resolved',
+        }));
+      } catch (error) {
+        this.setState({ error, status: 'rejected' });
+        console.log(error.message);
+      }
     }
   }
+
+  incrementPage = () => {
+    this.setState(({ page }) => ({ page: page + 1 }));
+  };
 
   render() {
     const { data, status } = this.state;
@@ -39,13 +61,19 @@ export class ImageGallery extends Component {
       return <Loader />;
     }
 
+    if (status === 'rejected') {
+      <div className="info">
+        Перепрошуємо за не зручності, але за вашим запитом нічого не знайдено
+      </div>;
+    }
+
     if (status === 'resolved') {
       return (
         <>
           <ul className="gallery">
             {data && <ImageGalleryItem dataImages={data} />}
           </ul>
-          <Button />
+          <Button onClick={this.incrementPage} />
         </>
       );
     }

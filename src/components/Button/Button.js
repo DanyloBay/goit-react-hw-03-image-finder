@@ -1,4 +1,5 @@
 import './Button.scss';
+import PropTypes from 'prop-types';
 export const Button = ({ onClick }) => {
   return (
     <div className="button__container">
@@ -7,4 +8,8 @@ export const Button = ({ onClick }) => {
       </button>
     </div>
   );
+};
+
+Button.propTypes = {
+  onClick: PropTypes.func.isRequired,
 };
