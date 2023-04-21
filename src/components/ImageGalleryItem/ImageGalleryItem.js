@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import './ImageGalleryItem.scss';
 import { Modal } from 'components/Modal/Modal';
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 
 export class ImageGalleryItem extends Component {
   state = {
@@ -14,7 +14,7 @@ export class ImageGalleryItem extends Component {
   };
 
   render() {
-    const { hits } = this.props.dataImages;
+    const hits = this.props.dataImages;
     const { toggleModal, largeImageURL } = this.state;
     return (
       <>
@@ -34,7 +34,3 @@ export class ImageGalleryItem extends Component {
     );
   }
 }
-
-ImageGalleryItem.propTypes = {
-  dataImages: PropTypes.object.isRequired,
-};

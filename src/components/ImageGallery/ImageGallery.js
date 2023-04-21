@@ -9,10 +9,11 @@ import fetchPhotos from 'components/API/Api';
 
 export class ImageGallery extends Component {
   state = {
-    data: null,
+    data: [],
     status: 'idle',
     page: 1,
     error: null,
+    imagesOnPage: 0,
   };
 
   async componentDidUpdate(prevProps, prevState) {
@@ -21,8 +22,12 @@ export class ImageGallery extends Component {
     try {
       if (prevProps.searchQuery !== searchQuery) {
         this.setState({ status: 'pending' });
-        const data = await fetchPhotos(searchQuery);
-        this.setState({ data, status: 'resolved' });
+        const { hits } = await fetchPhotos(searchQuery);
+        this.setState({
+          data: hits,
+          imagesOnPage: hits.length,
+          status: 'resolved',
+        });
       }
     } catch (error) {
       this.setState({ error, status: 'rejected' });
@@ -32,9 +37,10 @@ export class ImageGallery extends Component {
     if (prevState.page !== page) {
       try {
         this.setState({ status: 'pending' });
-        const response = await fetchPhotos(searchQuery, page);
+        const { hits } = await fetchPhotos(searchQuery, page);
         this.setState(prevState => ({
-          data: [...prevState.data, ...response],
+          data: prevState.data.concat(hits),
+          imagesOnPage: prevState.imagesOnPage + hits.length,
           status: 'resolved',
         }));
       } catch (error) {
@@ -49,7 +55,7 @@ export class ImageGallery extends Component {
   };
 
   render() {
-    const { data, status } = this.state;
+    const { data, status, imagesOnPage } = this.state;
 
     if (status === 'idle') {
       return (
@@ -73,7 +79,9 @@ export class ImageGallery extends Component {
           <ul className="gallery">
             {data && <ImageGalleryItem dataImages={data} />}
           </ul>
-          <Button onClick={this.incrementPage} />
+          {status === 'resolved' && imagesOnPage >= 12 && (
+            <Button onClick={this.incrementPage} />
+          )}
         </>
       );
     }
