@@ -6,7 +6,6 @@ import { Modal } from 'components/Modal/Modal';
 export class ImageGalleryItem extends Component {
   state = {
     toggleModal: false,
-    largeImageURL: null,
   };
 
   toggleModal = (e, largeImageURL) => {
@@ -14,19 +13,18 @@ export class ImageGalleryItem extends Component {
   };
 
   render() {
-    const hits = this.props.dataImages;
-    const { toggleModal, largeImageURL } = this.state;
+    const { id, webformatURL, largeImageURL } = this.props;
+    const { toggleModal } = this.state;
     return (
       <>
-        {hits.map(({ id, webformatURL, largeImageURL }) => (
-          <li key={id} className="gallery-item">
-            <img
-              src={webformatURL}
-              alt=""
-              onClick={e => this.toggleModal(e, largeImageURL)}
-            />
-          </li>
-        ))}
+        <li key={id} className="gallery-item">
+          <img
+            key={id}
+            src={webformatURL}
+            alt=""
+            onClick={e => this.toggleModal(e, largeImageURL)}
+          />
+        </li>
         {toggleModal && (
           <Modal largeImageURL={largeImageURL} onClose={this.toggleModal} />
         )}

@@ -5,11 +5,13 @@ import { ImageGallery } from './ImageGallery/ImageGallery';
 import fetchPhotos from 'components/API/Api';
 
 import '../App.scss';
+import { Loader } from './Loader/Loader';
+import { Button } from './Button/Button';
 
 export class App extends Component {
   state = {
     searchQuery: '',
-    data: null,
+    data: [],
     page: 1,
     imagesOnPage: 0,
     error: null,
@@ -24,7 +26,7 @@ export class App extends Component {
         this.setState({ status: 'pending' });
         const { totalHits, hits } = await fetchPhotos(searchQuery, page);
         this.setState(prevState => ({
-          data: hits,
+          data: [...prevState.data, ...hits],
           showBtn: page < Math.ceil(totalHits / 12),
           status: 'resolved',
         }));
@@ -46,6 +48,8 @@ export class App extends Component {
     this.setState({
       searchQuery,
       page: 1,
+      data: [],
+      showBtn: false,
     });
   };
 
@@ -53,14 +57,17 @@ export class App extends Component {
     const { data, status, showBtn } = this.state;
     return (
       <>
-        <SearchBar onSubmit={this.handleSearchSubmit} />
+        <SearchBar onSubmit={this.handleSearchSubmit} />;
         <div className="container">
-          <ImageGallery
-            status={status}
-            dataImages={data}
-            showBtn={showBtn}
-            onClick={this.incrementPage}
-          />
+          <ImageGallery dataImages={data} />
+          {showBtn && <Button onClick={this.incrementPage} />}
+          {status === 'pending' && <Loader />}
+          {status === 'rejected' && (
+            <div className="info">
+              Перепрошуємо за не зручності, але за вашим запитом нічого не
+              знайдено
+            </div>
+          )}
         </div>
       </>
     );

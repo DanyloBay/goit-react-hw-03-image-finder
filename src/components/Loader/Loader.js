@@ -4,7 +4,6 @@ export const Loader = () => {
   return (
     <div className="loader__item">
       <Audio
-        className="true"
         height="50"
         width="50"
         radius="50"
